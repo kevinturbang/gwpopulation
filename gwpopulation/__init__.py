@@ -31,18 +31,38 @@ __all_with_xp = [
 
 
 def disable_cupy():
-    import numpy as np
+    from warnings import warn
 
-    for module in __all_with_xp:
-        module.xp = np
+    warn(
+        f"Function enable_cupy is deprecated, use set_backed('cupy') instead",
+        DeprecationWarning,
+    )
+    set_backend(module="numpy")
 
 
 def enable_cupy():
-    try:
-        import cupy as cp
-    except ImportError:
-        import numpy as cp
+    from warnings import warn
 
-        print("Cannot import cupy, falling back to numpy.")
+    warn(
+        f"Function enable_cupy is deprecated, use set_backed('cupy') instead",
+        DeprecationWarning,
+    )
+    set_backend(module="cupy")
+
+
+def set_backend(module="numpy"):
+    supported = ["numpy", "cupy", "jax.numpy"]
+    if module not in supported:
+        raise ValueError(
+            f"Backed {module} not supported, should be in ', '.join(supported)"
+        )
+    import importlib
+
+    try:
+        xp = importlib.import_module(module)
+    except ImportError:
+        print(f"Cannot import {module}, falling back to numpy")
+        set_backend(module="numpy")
+        return
     for module in __all_with_xp:
-        module.xp = cp
+        module.xp = xp
