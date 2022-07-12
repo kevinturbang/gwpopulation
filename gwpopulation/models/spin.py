@@ -6,7 +6,7 @@ from ..cupy_utils import xp
 from ..utils import beta_dist, truncnorm, unnormalized_2d_gaussian
 
 
-def iid_spin(dataset, xi_spin, sigma_spin, amax, alpha_chi, beta_chi, z_min=-1):
+def iid_spin(dataset, xi_spin, sigma_spin, amax, alpha_chi, beta_chi, z_min):
     r"""
     Independently and identically distributed spins.
     The magnitudes are assumed to follow a Beta distribution and the
