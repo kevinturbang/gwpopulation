@@ -6,7 +6,7 @@ from ..cupy_utils import xp
 from ..utils import beta_dist, truncnorm, unnormalized_2d_gaussian
 
 
-def iid_spin(dataset, xi_spin, sigma_spin, amax, alpha_chi, beta_chi):
+def iid_spin(dataset, xi_spin, sigma_spin, amax, alpha_chi, beta_chi, z_min=-1):
     r"""
     Independently and identically distributed spins.
     The magnitudes are assumed to follow a Beta distribution and the
@@ -27,7 +27,7 @@ def iid_spin(dataset, xi_spin, sigma_spin, amax, alpha_chi, beta_chi):
         Maximum black hole spin.
     """
     prior = iid_spin_orientation_gaussian_isotropic(
-        dataset, xi_spin, sigma_spin
+        dataset, xi_spin, sigma_spin, z_min
     ) * iid_spin_magnitude_beta(dataset, amax, alpha_chi, beta_chi)
     return prior
 
@@ -79,7 +79,7 @@ def independent_spin_magnitude_beta(
     return prior
 
 
-def iid_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_spin):
+def iid_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_spin, z_min):
     r"""A mixture model of spin orientations with isotropic and normally
     distributed components. The distribution of primary and secondary spin
     orientations are expected to be identical and independent.
@@ -103,11 +103,11 @@ def iid_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_spin):
         Width of preferentially aligned component.
     """
     return independent_spin_orientation_gaussian_isotropic(
-        dataset, xi_spin, sigma_spin, sigma_spin
+        dataset, xi_spin, sigma_spin, sigma_spin, z_min
     )
 
 
-def independent_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_1, sigma_2):
+def independent_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_1, sigma_2, z_min):
     r"""A mixture model of spin orientations with isotropic and normally
     distributed components.
 
@@ -133,9 +133,9 @@ def independent_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_1, s
         Width of preferentially aligned component for the less
         massive black hole (:math:`\sigma_2`).
     """
-    prior = (1 - xi_spin) / 4 + xi_spin * truncnorm(
-        dataset["cos_tilt_1"], 1, sigma_1, 1, -1
-    ) * truncnorm(dataset["cos_tilt_2"], 1, sigma_2, 1, -1)
+    prior = (1 - xi_spin) / ((1 - z_min)**2) + xi_spin * truncnorm(
+        dataset["cos_tilt_1"], 1, sigma_1, 1, z_min
+    ) * truncnorm(dataset["cos_tilt_2"], 1, sigma_2, 1, z_min)
     return prior
 
 
