@@ -133,7 +133,7 @@ def independent_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_1, s
         Width of preferentially aligned component for the less
         massive black hole (:math:`\sigma_2`).
     """
-    prior = (1 - xi_spin) / ((1 - z_min)**2) + xi_spin * truncnorm(
+    prior = (1 - xi_spin) / ((1 - z_min)**2) * ((dataset['cos_tilt_1'] > z_min ) && (dataset['cos_tilt_2'] > z_min))  + xi_spin * truncnorm(
         dataset["cos_tilt_1"], 1, sigma_1, 1, z_min
     ) * truncnorm(dataset["cos_tilt_2"], 1, sigma_2, 1, z_min)
     return prior
