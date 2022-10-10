@@ -187,6 +187,6 @@ class PowerLawRedshiftMass(PowerLawRedshift):
         prob = xp.zeros(dataset["redshift"].shape)
         pop1mask = (dataset["mass_1"] < msplit)
         prob[pop1mask] = self.probability(dataset=dataset, lamb=lamb1)[pop1mask]
-        prob[~pop1mask] = self.probability(dataset=dataset, lamb=lamb1)[~pop1mask]
+        prob[~pop1mask] = self.probability(dataset=dataset, lamb=lamb2)[~pop1mask]
         return prob
     
