@@ -178,9 +178,9 @@ class PowerLawRedshiftMass(PowerLawRedshift):
         pop1frac = xp.trapz(x = pop1massgrid["mass_1"], y = PowerLawPeak.p_m1(pop1massgrid, alpha=alpha, mmin=mmin, mmax=mmax, lam=lam, mpp=mpp, sigpp=sigpp, delta_m=delta_m))
         
         pop1zs = dict()
-        pop1zs = dataset["redshift"][dataset["mass_1"] < msplit]
+        pop1zs["redshift"] = dataset["redshift"][dataset["mass_1"] < msplit]
         pop2zs = dict()
-        pop2zs = dataset["redshift"][dataset["mass_1"] > msplit]
+        pop2zs["redshift"] = dataset["redshift"][dataset["mass_1"] > msplit]
         
         lamb2 = lamb1 - delta_lamb
         return pop1frac * self.probability(dataset=pop1zs, lamb=lamb1) + (1 - pop1frac) * self.probability(dataset=pop2zs, lamb=lamb2) 
