@@ -172,6 +172,7 @@ def total_four_volume(lamb, analysis_time, max_redshift=2.3):
 class PowerLawRedshiftMass(PowerLawRedshift):
     def __call__(self, dataset, lamb1, delta_lamb, alpha, beta, mmin, mmax, lam, mpp, sigpp, delta_m, msplit):
         
+        """
         pop1massgrid = dict()
         pop1massgrid["mass_1"] = PowerLawPeak.m1s[PowerLawPeak.m1s < msplit]
         
@@ -181,7 +182,11 @@ class PowerLawRedshiftMass(PowerLawRedshift):
         pop1zs["redshift"] = dataset["redshift"][dataset["mass_1"] < msplit]
         pop2zs = dict()
         pop2zs["redshift"] = dataset["redshift"][dataset["mass_1"] > msplit]
-        
+        """
         lamb2 = lamb1 - delta_lamb
-        return pop1frac * self.probability(dataset=pop1zs, lamb=lamb1) + (1 - pop1frac) * self.probability(dataset=pop2zs, lamb=lamb2) 
+        prob = xp.zeros(dataset["redshift"].shape)
+        pop1mask = (dataset["mass_1"] < msplit)
+        prob[pop1mask] = self.probability(dataset=dataset, lamb=lamb1)[pop1mask]
+        prob[~pop1mask] = self.probability(dataset=dataset, lamb=lamb1)[~pop1mask]
+        return prob
     
