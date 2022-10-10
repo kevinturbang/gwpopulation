@@ -169,7 +169,7 @@ def total_four_volume(lamb, analysis_time, max_redshift=2.3):
     )
     return total_volume
 
-def PowerLawRedshiftMass(PowerLawRedshift):
+class PowerLawRedshiftMass(PowerLawRedshift):
     def __call__(self, dataset, lamb1, delta_lamb, alpha, beta, mmin, mmax, lam, mpp, sigpp, delta_m, msplit):
         
         pop1massgrid = dict()
