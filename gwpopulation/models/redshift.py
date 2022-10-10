@@ -3,9 +3,10 @@ Implemented redshift models
 """
 
 import numpy as np
-
+from .mass import SinglePeakSmoothedMassDistribution
 from ..cupy_utils import to_numpy, trapz, xp
 
+PowerLawPeak = SinglePeakSmoothedMassDistribution()
 
 class _Redshift(object):
     """
@@ -167,3 +168,26 @@ def total_four_volume(lamb, analysis_time, max_redshift=2.3):
         * normalization
     )
     return total_volume
+
+def PowerLawRedshiftMass(PowerLawRedshift):
+    def __call__(self, dataset, lamb1, delta_lamb, alpha, beta, mmin, mmax, lam, mpp, sigpp, delta_m, msplit):
+        
+        pop1massgrid = dict()
+        pop1massgrid["mass_1"] = PowerLawPeak.m1s[PowerLawPeak.m1s < msplit]
+        
+        pop1frac = xp.trapz(x = pop1massgrid["mass_1"], y = p_m1(pop1massgrid, alpha=alpha, beta=beta, mmin=mmin, mmax=mmax, lam=lam, mpp=mpp, sigpp=sigpp, delta_m=delta_m))
+        
+        pop1zs = dict()
+        pop1zs = dataset["redshift"][dataset["mass_1"] < msplit]
+        pop2zs = dict()
+        pop2zs = dataset["redshift"][dataset["mass_2"] > msplit]
+        
+        lamb2 = lamb1 - delta_lamb
+        return pop1frac * self.probability(dataset=pop1zs, lamb=lamb1) + (1 - pop1frac) * self.probability(dataset=pop2zs, lamb=lamb2) 
+    
+    
+    
+    
+    
+    
+    
