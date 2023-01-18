@@ -281,9 +281,9 @@ class GaussianChiEffChiP(object):
             y=xp.trapz(y=prob, axis=-1, x=self.chi_eff), axis=-1, x=self.chi_p
         )
 
-def two_component_chi_eff(dataset, A, sigma1, mu2, sigma2):
-    zero_chieff_gaussian = truncnorm(dataset["chi_eff"], mu = 0, sigma = sigma1, low = -1, high = 1)
-    high_chieff_gaussian = truncnorm(dataset["chi_eff"], mu = mu2, sigma = sigma2, low = -1, high = 1)
+def two_component_chi_eff(dataset, A, sigma_1, mu_2, sigma_2):
+    zero_chieff_gaussian = truncnorm(dataset["chi_eff"], mu = 0, sigma = sigma_1, low = -1, high = 1)
+    high_chieff_gaussian = truncnorm(dataset["chi_eff"], mu = mu_2, sigma = sigma_2, low = -1, high = 1)
     return A * zero_chieff_gaussian + (1 - A) * high_chieff_gaussian
 
 class SplineSpinMagnitudeIdentical(InterpolatedNoBaseModelIdentical):
