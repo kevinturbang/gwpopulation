@@ -17,10 +17,12 @@
       :toctree:
    
       beta_dist
+      get_name
       get_version_information
       powerlaw
       truncnorm
       unnormalized_2d_gaussian
+      von_mises
    
    
 

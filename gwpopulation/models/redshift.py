@@ -3,7 +3,6 @@ Implemented redshift models
 """
 
 import numpy as np
-from astropy.cosmology import Planck15
 
 from ..cupy_utils import to_numpy, trapz, xp
 
@@ -13,7 +12,11 @@ class _Redshift(object):
     Base class for models which include a term like dVc/dz / (1 + z)
     """
 
+    variable_names = None
+
     def __init__(self, z_max=2.3):
+        from astropy.cosmology import Planck15
+
         self.z_max = z_max
         self.zs_ = np.linspace(1e-3, z_max, 1000)
         self.zs = xp.asarray(self.zs_)
@@ -21,8 +24,8 @@ class _Redshift(object):
         self.dvc_dz = xp.asarray(self.dvc_dz_)
         self.cached_dvc_dz = None
 
-    def __call__(self, *args, **kwargs):
-        raise NotImplementedError
+    def __call__(self, dataset, **kwargs):
+        return self.probability(dataset=dataset, **kwargs)
 
     def _cache_dvc_dz(self, redshifts):
         self.cached_dvc_dz = xp.asarray(
@@ -103,8 +106,7 @@ class PowerLawRedshift(_Redshift):
         The spectral index.
     """
 
-    def __call__(self, dataset, lamb):
-        return self.probability(dataset=dataset, lamb=lamb)
+    variable_names = ["lamb"]
 
     def psi_of_z(self, redshift, **parameters):
         return (1 + redshift) ** parameters["lamb"]
@@ -134,10 +136,7 @@ class MadauDickinsonRedshift(_Redshift):
         The maximum redshift allowed.
     """
 
-    def __call__(self, dataset, gamma, kappa, z_peak):
-        return self.probability(
-            dataset=dataset, gamma=gamma, kappa=kappa, z_peak=z_peak
-        )
+    variable_names = ["gamma", "kappa", "z_peak"]
 
     def psi_of_z(self, redshift, **parameters):
         gamma = parameters["gamma"]
@@ -150,10 +149,9 @@ class MadauDickinsonRedshift(_Redshift):
         return psi_of_z
 
 
-power_law_redshift = PowerLawRedshift()
-
-
 def total_four_volume(lamb, analysis_time, max_redshift=2.3):
+    from astropy.cosmology import Planck15
+
     redshifts = np.linspace(0, max_redshift, 1000)
     psi_of_z = (1 + redshifts) ** lamb
     normalization = 4 * np.pi / 1e9 * analysis_time
