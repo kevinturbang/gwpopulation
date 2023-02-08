@@ -195,7 +195,12 @@ def gaussian_chi_p(dataset, mu_chi_p, sigma_chi_p):
     """
     return truncnorm(dataset["chi_p"], mu=mu_chi_p, sigma=sigma_chi_p, low=0, high=1)
 
-
+def uniform_spin_magnitude(dataset, a_max):
+    a_min = 0
+    p_a1 = ((dataset["a_1"] >= a_min) & (dataset["a_1"] <= a_max)) / (a_max- a_min)
+    p_a2 = ((dataset["a_2"] >= a_min) & (dataset["a_2"] <= a_max)) / (a_max- a_min)
+    return p_a1 * p_a2
+    
 class GaussianChiEffChiP(object):
     r"""
     A covariant Gaussian in effective aligned and precessing spins.
