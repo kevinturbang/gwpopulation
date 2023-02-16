@@ -676,6 +676,57 @@ class SinglePeakSmoothedMassDistribution(BaseSmoothedMassDistribution):
     def kwargs(self):
         return dict(gaussian_mass_maximum=self.mmax)
 
+class CosmoCoupledSinglePeakSmoothedMassDistribution(BaseSmoothedMassDistribution):
+    """
+    Powerlaw + peak model for two-dimensional mass distribution with low
+    mass smoothing.
+
+    https://arxiv.org/abs/1801.02699 Eq. (11) (T&T18)
+
+    Parameters
+    ----------
+    dataset: dict
+        Dictionary of numpy arrays for 'mass_1' and 'mass_ratio'.
+    alpha: float
+        Powerlaw exponent for more massive black hole.
+    beta: float
+        Power law exponent of the mass ratio distribution.
+    mmin: float
+        Minimum black hole mass.
+    mmax: float
+        Maximum mass in the powerlaw distributed component.
+    lam: float
+        Fraction of black holes in the Gaussian component.
+    mpp: float
+        Mean of the Gaussian component.
+    sigpp: float
+        Standard deviation of the Gaussian component.
+    delta_m: float
+        Rise length of the low end of the mass distribution.
+
+    Notes
+    -----
+    The Gaussian component is bounded between [`mmin`, `self.mmax`].
+    This means that the `mmax` parameter is _not_ the global maximum.
+    """
+
+    primary_model = two_component_single
+
+    @property
+    def kwargs(self):
+        return dict(gaussian_mass_maximum=self.mmax)
+
+    def p_m1(self, dataset, **kwargs):
+        mmin = kwargs.get("mmin", self.mmin)
+        delta_m = kwargs.pop("delta_m", 0)
+        nu = kwargs.pop("nu")
+        m1_z0 = dataset["mass_1"] / (1 + dataset["redshift"])**nu
+        p_m = self.__class__.primary_model(m1_z0, **kwargs)
+        p_m *= self.smoothing(
+            m1_z0, mmin=mmin, mmax=self.mmax, delta_m=delta_m
+        )
+        norm = self.norm_p_m1(delta_m=delta_m, **kwargs)
+        return p_m / norm
 
 class MultiPeakSmoothedMassDistribution(BaseSmoothedMassDistribution):
     """
