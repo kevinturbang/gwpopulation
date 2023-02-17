@@ -713,6 +713,17 @@ class CosmoCoupledSinglePeakSmoothedMassDistribution(BaseSmoothedMassDistributio
     primary_model = two_component_single
 
     @property
+    def variable_names(self):
+        vars = getattr(
+            self.primary_model,
+            "variable_names",
+            inspect.getfullargspec(self.primary_model).args[1:],
+        )
+        vars += ["beta", "delta_m", "nu"]
+        vars = set(vars).difference(self.kwargs.keys())
+        return vars
+
+    @property
     def kwargs(self):
         return dict(gaussian_mass_maximum=self.mmax)
 
@@ -720,7 +731,7 @@ class CosmoCoupledSinglePeakSmoothedMassDistribution(BaseSmoothedMassDistributio
         mmin = kwargs.get("mmin", self.mmin)
         delta_m = kwargs.pop("delta_m", 0)
         nu = kwargs.pop("nu")
-        m1_z0 = dataset["mass_1"] / (1 + dataset["redshift"])**nu
+        m1_z0 = dataset["mass_1"] * (1 + dataset["redshift"])**nu
         p_m = self.__class__.primary_model(m1_z0, **kwargs)
         p_m *= self.smoothing(
             m1_z0, mmin=mmin, mmax=self.mmax, delta_m=delta_m
