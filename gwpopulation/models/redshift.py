@@ -6,7 +6,6 @@ import numpy as np
 
 from ..cupy_utils import to_numpy, trapz, xp
 
-
 class _Redshift(object):
     """
     Base class for models which include a term like dVc/dz / (1 + z)
@@ -110,6 +109,85 @@ class PowerLawRedshift(_Redshift):
 
     def psi_of_z(self, redshift, **parameters):
         return (1 + redshift) ** parameters["lamb"]
+
+class LinearEvolutionPowerLawRedshift(_Redshift):
+
+    variable_names = ["lamb", "gamma"]
+    def __init__(self, evolution_parameter, z_max=2.3, exponent_bounds = (-13,13)):
+        from astropy.cosmology import Planck15
+
+        super().__init__(z_max=z_max)
+        self.cache_normalization()
+        self.evolution_parameter = evolution_parameter
+
+    def psi_of_z(self, redshift, evolution_parameter, **parameters):
+        exponent = (parameters["lamb"] + evolution_parameter/10 * parameters["gamma"])
+        return (1 + redshift) ** exponent
+
+    def cache_normalization(self):
+
+        exponents = xp.linspace(-13, 13, 10000)
+        norms = []
+        for power in exponents:
+            psi_of_z = (1 + self.zs) ** power
+            norm = trapz(psi_of_z * self.dvc_dz / (1 + self.zs), self.zs)
+            norms.append(norm)
+        
+        self.norms = xp.array(norms)
+        self.norm_exponents = exponents
+
+    def probability(self, dataset, **parameters):
+        exponent = (parameters["lamb"] + dataset[self.evolution_parameter]/10 * parameters["gamma"])
+        normalisation = xp.interp(exponent, xp = self.norm_exponents, fp = self.norms)
+        differential_volume = self.differential_spacetime_volume(
+            dataset=dataset, **parameters
+        )
+        in_bounds = dataset["redshift"] <= self.z_max
+        return differential_volume / normalisation * in_bounds
+
+    def differential_spacetime_volume(self, dataset, **parameters):
+        r"""
+        Compute the differential spacetime volume.
+
+        .. math::
+            d\mathcal{V} = \frac{1}{1+z} \frac{dVc}{dz} \psi(z|\Lambda)
+
+        Parameters
+        ----------
+        dataset: dict
+            Dictionary containing entry "redshift"
+        parameters: dict
+            Dictionary of parameters
+        Returns
+        -------
+        differential_volume: (float, array-like)
+            Differential spacetime volume
+        """
+        psi_of_z = self.psi_of_z(redshift=dataset["redshift"], evolution_parameter=dataset[self.evolution_parameter], **parameters)
+        differential_volume = psi_of_z / (1 + dataset["redshift"])
+        try:
+            differential_volume *= self.cached_dvc_dz
+        except (TypeError, ValueError):
+            self._cache_dvc_dz(dataset["redshift"])
+            differential_volume *= self.cached_dvc_dz
+        return differential_volume
+
+
+    
+class PrimaryMassLinearEvolutionPowerLawRedshift(LinearEvolutionPowerLawRedshift):
+    
+    def __init__(self, z_max=2.3, exponent_bounds = (-13,13)):
+        super().__init__(evolution_parameter = "mass_1", z_max=z_max, exponent_bounds = exponent_bounds)
+
+class TotalMassLinearEvolutionPowerLawRedshift(LinearEvolutionPowerLawRedshift):
+    
+    def __init__(self, z_max=2.3, exponent_bounds = (-13,13)):
+        super().__init__(evolution_parameter = "total_mass", z_max=z_max, exponent_bounds = exponent_bounds)
+
+class MassRatioLinearEvolutionPowerLawRedshift(LinearEvolutionPowerLawRedshift):
+    
+    def __init__(self, z_max=2.3, exponent_bounds = (-13,13)):
+        super().__init__(evolution_parameter = "mass_ratio", z_max=z_max, exponent_bounds = exponent_bounds)
 
 
 class MadauDickinsonRedshift(_Redshift):
