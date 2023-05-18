@@ -121,12 +121,12 @@ class LinearEvolutionPowerLawRedshift(_Redshift):
         self.evolution_parameter = evolution_parameter
 
     def psi_of_z(self, redshift, evolution_parameter, **parameters):
-        exponent = (parameters["lamb"] + evolution_parameter/10 * parameters["gamma"])
+        exponent = (parameters["lamb"] + (evolution_parameter/10 - 1) * parameters["gamma"])
         return (1 + redshift) ** exponent
 
     def cache_normalization(self):
 
-        exponents = xp.linspace(-13, 13, 10000)
+        exponents = xp.linspace(-30, 30, 100000)
         norms = []
         for power in exponents:
             psi_of_z = (1 + self.zs) ** power
