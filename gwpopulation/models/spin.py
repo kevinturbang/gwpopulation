@@ -80,7 +80,8 @@ def independent_spin_magnitude_beta(
     return prior
 
 def gaussian_aligned_components(dataset, mu_chi, sigma_chi):
-    return truncnorm(dataset["chi_1"], mu=mu_chi, sigma=sigma_chi, high=1, low=-1) * truncnorm(dataset["chi_2"], mu=mu_chi, sigma=sigma_chi, high=1, low=-1)
+    return (truncnorm(dataset["chi_1"], mu=mu_chi, sigma=sigma_chi, high=1, low=-1) 
+            * truncnorm(dataset["chi_2"], mu=mu_chi, sigma=sigma_chi, high=1, low=-1) )
 
 def iid_spin_orientation_gaussian_isotropic(dataset, xi_spin, sigma_spin):
     r"""A mixture model of spin orientations with isotropic and normally

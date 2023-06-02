@@ -15,12 +15,12 @@ class _Redshift(object):
     variable_names = None
 
     def __init__(self, z_max=2.3):
-        from astropy.cosmology import Planck15
+        from astropy.cosmology import Planck18
 
         self.z_max = z_max
         self.zs_ = np.linspace(1e-3, z_max, 1000)
         self.zs = xp.asarray(self.zs_)
-        self.dvc_dz_ = Planck15.differential_comoving_volume(self.zs_).value * 4 * np.pi
+        self.dvc_dz_ = Planck18.differential_comoving_volume(self.zs_).value * 4 * np.pi
         self.dvc_dz = xp.asarray(self.dvc_dz_)
         self.cached_dvc_dz = None
 
@@ -150,14 +150,14 @@ class MadauDickinsonRedshift(_Redshift):
 
 
 def total_four_volume(lamb, analysis_time, max_redshift=2.3):
-    from astropy.cosmology import Planck15
+    from astropy.cosmology import Planck18
 
     redshifts = np.linspace(0, max_redshift, 1000)
     psi_of_z = (1 + redshifts) ** lamb
     normalization = 4 * np.pi / 1e9 * analysis_time
     total_volume = (
         np.trapz(
-            Planck15.differential_comoving_volume(redshifts).value
+            Planck18.differential_comoving_volume(redshifts).value
             / (1 + redshifts)
             * psi_of_z,
             redshifts,
