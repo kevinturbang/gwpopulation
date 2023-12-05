@@ -29,6 +29,7 @@ class HyperparameterLikelihood(Likelihood):
         self,
         posteriors,
         hyper_prior,
+        stochastic = False,
         ln_evidences=None,
         max_samples=1e100,
         selection_function=lambda args: 1,
@@ -97,6 +98,11 @@ class HyperparameterLikelihood(Likelihood):
         else:
             self.total_noise_evidence = np.nan
 
+        if stochastic:
+            self.stochastic=True
+        else:
+            self.stochastic=False
+
         self.conversion_function = conversion_function
         self.selection_function = selection_function
 
@@ -130,9 +136,15 @@ class HyperparameterLikelihood(Likelihood):
         selection, selection_variance = self._get_selection_factor()
         variance += selection_variance
         ln_l += selection
+        if self.stochastic:
+            ln_l_stochastic = self.log_likelihood_stochastic()
+            ln_l += ln_l_stochastic
         self._pop_added(added_keys)
         return ln_l, float(variance)
 
+    def log_likelihood_stochastic(self):
+        return 
+        
     def log_likelihood_ratio(self):
         ln_l, variance = self.ln_likelihood_and_variance()
         if variance > self._max_variance or xp.isnan(ln_l):
